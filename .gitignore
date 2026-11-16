@@ -10,3 +10,8 @@ llaves.tar.gz
 __pycache__/
 ~/arkhe-mesh-data/
 ~/.secrets/
+# Datos vivos del mesh - nunca en git
+memoria_*.json
+arkhe-mesh-data/
+src/mesh/25
+*.json.tmp

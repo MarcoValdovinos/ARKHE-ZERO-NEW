@@ -1,30 +1,12 @@
-# Entornos y secretos
-.env
 *.pem
-*_key*
+*.key
+*.gpg
 jwt.txt
-llave.pem
-private_key.pem
+*KEYS*
 env-admin.txt
-SYNCRO-VALDOVINOS-KEYS-BACKUP.txt
-
-# Archivos generados y basura
-*.log
-*.zip
-*.tar.gz
-a.json
-a1.json
-a2.json
-t2.json
-t3.json
-t4.json
-t5.json
-t6.json
-v1.json
-v2.json
-v3.json
-v4.json
-memoria_*.json
-
-# Sistema operativo
-.DS_Store
+.arkh-wallet.json
+respaldo_*.tar.gz
+llaves.tar.gz
+__pycache__/
+~/arkhe-mesh-data/
+~/.secrets/

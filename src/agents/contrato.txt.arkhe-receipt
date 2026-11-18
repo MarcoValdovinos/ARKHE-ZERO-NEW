@@ -1,0 +1,7 @@
+{
+  "filename": "contrato.txt",
+  "file_hash_sha256": "b8ebde71adaa95a4b51d1d53c7a94b4869aedc65bdb33f90c18b6c7d1eff4569",
+  "timestamp": "2026-11-17T00:48:59.177222+00:00",
+  "device_id": "ecatepec-01-1122",
+  "signature_ed25519": "8f6b12b0a97db9db8875078517fa7dcebb8666820de4505eaf45d4e02d53ad522699cebcbd1486ce355a3a200441d2a760e11ae5975b5e0d70433e7159e3680a"
+}

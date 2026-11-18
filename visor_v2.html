@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="es"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>ARKHE · VISOR ELITE</title>
+<style>
+:root{--gold:#ffcc44;--gold2:#ff8800;--cyan:#00d0ff;--bg:#050508;--card:#0b0b12;--line:#1e1e2e;--txt:#f2f2f5;--mut:#8a8a9e;--green:#00ff88;--red:#ff2244}
+*{box-sizing:border-box}body{margin:0;background:radial-gradient(900px 500px at 50% -10%,#1a1400 0%,#050508 55%),var(--bg);color:var(--txt);font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif}
+.top{max-width:1080px;margin:0 auto;padding:18px 18px 0;display:flex;justify-content:space-between;align-items:center}
+.logo{font-weight:900;letter-spacing:6px;font-size:18px}.logo span{color:var(--cyan)} .pill{border:1px solid var(--line);padding:8px 12px;border-radius:999px;font-size:12px;color:var(--mut)}
+.wrap{max-width:1080px;margin:0 auto;padding:14px 18px 40px}
+.hero{display:grid;grid-template-columns:1.1fr .9fr;gap:16px;margin-top:14px}
+@media(max-width:760px){.hero{grid-template-columns:1fr}}
+.card{background:linear-gradient(180deg,#0d0d16,#08080f);border:1px solid var(--line);border-radius:20px;padding:18px;box-shadow:0 20px 60px rgba(0,0,0,.45)}
+.kpi{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-top:14px}.kpi div{background:#0a0a12;border:1px solid var(--line);border-radius:14px;padding:12px}.kpi b{font-size:24px;display:block}.kpi span{font-size:11px;letter-spacing:2px;color:var(--mut)}
+.dec{font-size:38px;font-weight:900;letter-spacing:2px;line-height:1}.dec small{display:block;font-size:12px;letter-spacing:3px;color:var(--mut);margin-top:8px;font-weight:400}
+canvas{width:100%;height:280px;display:block;border-radius:14px;background:radial-gradient(circle at 50% 40%,#0a1a2e 0%,#000 70%)}
+table{width:100%;border-collapse:collapse;font-size:13px}th{color:var(--mut);font-size:11px;letter-spacing:2px;text-align:left}td,th{padding:10px 8px;border-bottom:1px solid #15151f}
+.ok{color:var(--green);font-weight:700}.bad{color:var(--red);font-weight:700}.mut{color:var(--mut);font-size:12px;line-height:1.6}
+.btn{background:var(--gold);color:#000;border:0;padding:12px 18px;border-radius:999px;font-weight:800;cursor:pointer;letter-spacing:1px}
+.badge{display:inline-flex;gap:6px;align-items:center;border:1px solid var(--line);padding:6px 10px;border-radius:999px;font-size:12px}.dot{width:8px;height:8px;border-radius:50%;background:var(--green);box-shadow:0 0 12px var(--green)} .dot.red{background:var(--red);box-shadow:0 0 12px var(--red)}
+.bar{height:6px;background:#1a1a24;border-radius:999px;overflow:hidden;margin-top:10px}.bar i{display:block;height:100%;background:linear-gradient(90deg,var(--gold),var(--gold2),var(--cyan));width:0%;transition:width .6s}
+</style></head><body>
+<div class="top"><div class="logo">ARKHE <span>· VISOR ELITE</span></div><div class="pill" id="clock">--:-- · Termux · Solo verifica</div></div>
+<div class="wrap">
+<div class="hero">
+<div class="card"><div style="display:flex;justify-content:space-between;align-items:center"><span class="badge"><span class="dot" id="dot"></span><span id="statusTxt">VERIFICANDO…</span></span><span class="mut" id="verifyMs"></span></div>
+<canvas id="c" width="520" height="280"></canvas>
+<div style="display:flex;gap:10px;align-items:center;margin-top:10px"><button class="btn" onclick="refresh()">↻ VERIFICAR AHORA</button><span class="mut" id="last">—</span></div>
+<div class="bar"><i id="barFill"></i></div><div class="mut" id="barLabel" style="margin-top:8px">—</div></div>
+<div class="card"><div class="mut" style="letter-spacing:3px">DECISIÓN DE LA MALLA</div><div class="dec" id="dec">—<small id="rule">Antes de 12:00 = CALDO 100 · Después = MOLE 120</small></div>
+<div class="kpi"><div><b id="total">0</b><span>TOTAL EVENTOS</span></div><div><b class="ok" id="valid">0</b><span>VÁLIDOS</span></div><div><b class="bad" id="invalid">0</b><span>INVÁLIDOS</span></div></div>
+<div style="margin-top:14px"><div class="mut">NODOS DETECTADOS</div><div id="nodes" style="font-weight:700;margin-top:4px">—</div></div>
+<div style="margin-top:14px"><div class="mut">ARCHIVOS · AUDITORÍA</div><div id="files" class="mut" style="margin-top:4px">—</div><div class="mut" id="audit" style="margin-top:8px"></div></div></div>
+</div>
+<div class="card" style="margin-top:16px"><div style="display:flex;justify-content:space-between;align-items:center"><h3 style="margin:0">Últimos eventos verificados · Trazabilidad total</h3><span class="mut">Ed25519 + Allowlist + Hash</span></div>
+<div style="overflow:auto;margin-top:10px"><table><thead><tr><th>NODO</th><th>DECISIÓN</th><th>FIRMA</th><th>ALLOWLIST</th><th>HASH</th><th>VEREDICTO</th><th>MOTIVO</th></tr></thead><tbody id="rows"></tbody></table></div><div id="err" class="mut" style="color:var(--red);margin-top:10px"></div></div>
+<div class="mut" style="text-align:center;margin-top:16px">ARKHE no promete lo que no puede probar. Si un evento es inválido, se muestra como inválido. Sin demo. Sin simulados. · Las llaves privadas nunca salen de Termux.</div>
+</div>
+<script>
+const cv=document.getElementById('c'),ctx=cv.getContext('2d');let rot=0,pulse=0,danger=false;
+async function refresh(){
+ try{
+  let r=await fetch('/api/status');let j=await r.json();
+  document.getElementById('dec').firstChild.textContent=j.decision;
+  document.getElementById('rule').textContent=j.rule;
+  document.getElementById('total').textContent=j.total_events;
+  document.getElementById('valid').textContent=j.valid;
+  document.getElementById('invalid').textContent=j.invalid;
+  document.getElementById('nodes').textContent=j.nodes.join(' · ')||'—';
+  document.getElementById('files').textContent=j.files.join(', ')||'—';
+  document.getElementById('audit').textContent=j.audit;
+  document.getElementById('verifyMs').textContent=j.verify_ms+' ms · v'+j.version;
+  document.getElementById('last').textContent='Actualizado '+new Date().toLocaleTimeString()+' · Auto cada 30s';
+  document.getElementById('clock').textContent=new Date().toLocaleTimeString()+' · Termux · Solo verifica';
+  document.getElementById('err').textContent=j.errors.length?('Errores: '+JSON.stringify(j.errors)):'';
+  danger=j.invalid>0;pulse=1;
+  document.getElementById('dot').className='dot'+(danger?' red':'');
+  document.getElementById('statusTxt').textContent=danger?'INVÁLIDO DETECTADO — NO CONFIAR':'MALLA VERIFICADA';
+  document.getElementById('statusTxt').style.color=danger?'var(--red)':'var(--green)';
+  let pct=j.total_events?Math.round(j.valid/j.total_events*100):0;
+  document.getElementById('barFill').style.width=pct+'%';
+  document.getElementById('barLabel').textContent=pct+'% válidos · '+j.valid+' / '+j.total_events+' · Cadena única: '+(j.chain_unique_hashes?'OK':'REVISAR');
+  let rows=document.getElementById('rows');rows.innerHTML='';
+  j.events.slice().reverse().forEach(e=>{
+   let tr=document.createElement('tr');
+   tr.innerHTML='<td><b>'+e.node_id+'</b><div class="mut">'+e.source+'</div></td><td>'+(e.decision||'—')+'</td><td>'+(e.ok_signature===true?'<span class="ok">✓</span>':e.ok_signature===false?'<span class="bad">✗</span>':'—')+'</td><td>'+(e.ok_allowlist?'<span class="ok">✓</span>':'<span class="bad">✗</span>')+'</td><td class="mut">'+(e.entry_hash||'—').slice(0,12)+'…</td><td>'+(e.valid?'<span class="ok">VÁLIDO</span>':'<span class="bad">INVÁLIDO</span>')+'</td><td class="mut">'+(e.reasons.join(', ')||'—')+'</td>';
+   rows.appendChild(tr);
+  });
+  if(!j.total_events) document.getElementById('err').textContent='Sin eventos. Verifica que memoria_*.json esté en ~/ARKHE-ZERO-NEW/src/mesh/';
+ }catch(e){document.getElementById('err').textContent='Error /api/status: '+e.message}
+}
+function draw(){
+ let w=cv.width,h=cv.height;ctx.clearRect(0,0,w,h);rot+=0.008+pulse*0.02;pulse*=0.97;
+ let cx=w/2,cy=h/2-10,R=72+pulse*16;let bad=danger;
+ ctx.save();ctx.translate(cx,cy);ctx.globalAlpha=.18;ctx.strokeStyle='#00d0ff';
+ for(let i=0;i<6;i++){ctx.beginPath();ctx.arc(Math.cos(i*1.047)*R*.6,Math.sin(i*1.047)*R*.6,R*.55,0,7);ctx.stroke()}ctx.restore();
+ ctx.save();ctx.translate(cx,cy);ctx.rotate(rot);
+ ctx.strokeStyle=bad?'#ff2244':'#ffcc44';ctx.lineWidth=2;ctx.shadowColor=bad?'#ff2244':'#ffcc44';ctx.shadowBlur=18;
+ for(let k=0;k<2;k++){ctx.beginPath();for(let i=0;i<3;i++){let a=-Math.PI/2+i*2*Math.PI/3+k*Math.PI;let x=Math.cos(a)*R,y=Math.sin(a)*R;if(i==0)ctx.moveTo(x,y);else ctx.lineTo(x,y)}ctx.closePath();ctx.stroke();ctx.rotate(Math.PI)}
+ ctx.fillStyle=bad?'rgba(255,34,68,.22)':'rgba(255,204,68,.16)';ctx.beginPath();ctx.arc(0,0,R*.55,0,7);ctx.fill();ctx.restore();
+ ctx.fillStyle=bad?'#ff2244':'#00ff88';ctx.font='12px system-ui';ctx.textAlign='center';ctx.fillText(bad?'⛔ INVÁLIDO DETECTADO — NO CONFIAR':'✓ MALLA VERIFICADA',cx,h-18);
+ requestAnimationFrame(draw);
+}draw();refresh();setInterval(refresh,30000);
+</script></body></html>

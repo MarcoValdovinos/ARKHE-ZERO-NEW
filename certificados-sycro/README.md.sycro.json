@@ -1,0 +1,22 @@
+{
+  "protocol": "ARKHE-ZERO-KRONOS",
+  "product": "SYCRO NOTARY ARKHE ZERO",
+  "folio": "SYCRO-MWIMK8LP-E50ECB00",
+  "file": {
+    "name": "README.md",
+    "size_bytes": 3,
+    "sha256": "e50ecb00762f8adb736fc5bfedfe0f8fc59c4d94af529c184ab3642921dbc069",
+    "sha512": "3ifiBXWC5FHRYLTduc4m+t7RrxweNr9pexOT9CH2cwNY6y7yOkCO/YMmrts1lroShLm25fa2EFPm4UYULyiRPw=="
+  },
+  "author": "Marco A. Rojas Valdovinos",
+  "manifest": "TOLUCA-GLOBAL-e8d9eac8",
+  "governance": "SCDR-002 - 51% Humano / 49% IA",
+  "standards": [
+    "NIST FIPS 204 - ML-DSA-65",
+    "NOM-151-SCFI-2016",
+    "RFC-3161",
+    "Dublin Core ISO 15836"
+  ],
+  "timestamp": "2026-11-16T02:08:51.853Z",
+  "status": "NOTARIZADO"
+}

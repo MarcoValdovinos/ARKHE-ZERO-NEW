@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="es"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>ARKHE VISOR · PRODUCCION</title>
+<style>body{margin:0;background:#000;color:#e8e8e8;font-family:monospace}header{padding:14px 16px;border-bottom:1px solid #222;display:flex;justify-content:space-between}h1{font-size:16px;letter-spacing:4px;color:#ffcc44;margin:0}canvas{display:block;margin:0 auto;background:#000308}main{max-width:720px;margin:0 auto;padding:12px}.card{border:1px solid #222;border-radius:12px;padding:12px;margin:10px 0;background:#050505}.ok{color:#00ff88}.bad{color:#ff2244}.mut{color:#888;font-size:11px}table{width:100%;border-collapse:collapse;font-size:12px}td,th{border-bottom:1px solid #1a1a1a;padding:6px;text-align:left}button{background:#ffcc44;color:#000;border:0;padding:10px 16px;border-radius:8px;font-weight:700}pre{white-space:pre-wrap;color:#ff2244}</style>
+</head><body>
+<header><h1>ARKHE VISOR · PRODUCCION</h1><span id="clock">--:--</span></header>
+<main><canvas id="c" width="360" height="280"></canvas>
+<div class="card"><div>DECISION: <b id="dec">--</b> · HORA: <span id="hour">--</span></div><div>EVENTOS: <span id="total">0</span> · VALIDOS: <span class="ok" id="valid">0</span> · INVALIDOS: <span class="bad" id="invalid">0</span> · NODOS: <span id="nodes">--</span></div><div class="mut">Fuente: /api/status · Verificacion real Ed25519 + allowlist. Sin demo. Sin simulados.</div><div><button onclick="refresh()">VERIFICAR AHORA</button> <span class="mut" id="last">--</span></div><pre id="err"></pre></div>
+<div class="card"><h3 style="margin:0 0 8px">Ultimos eventos verificados</h3><table><thead><tr><th>Nodo</th><th>Decision</th><th>Firma</th><th>Allowlist</th><th>Veredicto</th></tr></thead><tbody id="rows"></tbody></table></div>
+<div class="card mut">Este visor NUNCA firma. Solo lee llaves publicas del servidor. Las privadas nunca salen de Termux.</div></main>
+<script>
+const cv=document.getElementById('c'),ctx=cv.getContext('2d');let rot=0,pulse=0,danger=false;
+async function refresh(){
+ try{
+  let r=await fetch('/api/status');let j=await r.json();
+  document.getElementById('dec').textContent=j.decision;
+  document.getElementById('hour').textContent=j.hour+':00';
+  document.getElementById('total').textContent=j.total_events;
+  document.getElementById('valid').textContent=j.valid;
+  document.getElementById('invalid').textContent=j.invalid;
+  document.getElementById('nodes').textContent=j.nodes.join(', ')||'--';
+  document.getElementById('last').textContent='Actualizado '+new Date().toLocaleTimeString();
+  document.getElementById('clock').textContent=new Date().toLocaleTimeString();
+  document.getElementById('err').textContent=j.errors.length?('Errores: '+JSON.stringify(j.errors)):'';
+  danger=j.invalid>0;pulse=1;
+  let rows=document.getElementById('rows');rows.innerHTML='';
+  j.events.slice().reverse().forEach(e=>{
+   let tr=document.createElement('tr');
+   tr.innerHTML='<td>'+e.node_id+'</td><td>'+(e.decision||'--')+'</td><td>'+(e.ok_signature===true?'OK':e.ok_signature===false?'X':'--')+'</td><td>'+(e.ok_allowlist?'OK':'X')+'</td><td>'+(e.valid?'<span class="ok">VALIDO</span>':'<span class="bad">INVALIDO</span>')+'</td>';
+   rows.appendChild(tr);
+  });
+  if(!j.total_events) document.getElementById('err').textContent='Sin eventos. Verifica que memoria_*.json este en ~/ARKHE-ZERO-NEW/src/mesh/ o en ~/ARKHE-ZERO-NEW/';
+ }catch(e){document.getElementById('err').textContent='Error /api/status: '+e.message}
+}
+function draw(){
+ ctx.clearRect(0,0,360,280);rot+=0.01+pulse*0.02;pulse*=0.97;
+ let cx=180,cy=140,R=70+pulse*18;let bad=danger;
+ ctx.save();ctx.translate(cx,cy);ctx.rotate(rot);
+ ctx.strokeStyle=bad?'#ff2244':'#ffcc44';ctx.lineWidth=2;
+ for(let k=0;k<2;k++){ctx.beginPath();for(let i=0;i<3;i++){let a=-Math.PI/2+i*2*Math.PI/3+k*Math.PI;let x=Math.cos(a)*R,y=Math.sin(a)*R;if(i==0)ctx.moveTo(x,y);else ctx.lineTo(x,y)}ctx.closePath();ctx.stroke();ctx.rotate(Math.PI)}
+ ctx.fillStyle=bad?'rgba(255,34,68,.25)':'rgba(255,204,68,.15)';ctx.beginPath();ctx.arc(0,0,R*0.55,0,7);ctx.fill();ctx.restore();
+ ctx.fillStyle=bad?'#ff2244':'#00ff88';ctx.font='11px monospace';ctx.fillText(bad?'INVALIDO DETECTADO':'MALLA VERIFICADA',105,260);
+ requestAnimationFrame(draw);
+}draw();refresh();setInterval(refresh,30000);
+</script></body></html>

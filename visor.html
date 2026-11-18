@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="es"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>ARKHE VISOR</title>
+<style>body{margin:0;background:#000;color:#ffd97a;font-family:monospace;text-align:center}canvas{display:block;margin:0 auto;background:#000308}h1{letter-spacing:8px;margin:10px 0 0}.box{border:2px dashed #ffcc44;padding:12px;margin:10px;border-radius:14px}#log{max-width:520px;margin:10px auto;text-align:left;font-size:11px;line-height:1.6;background:#060c1e;padding:10px;border-radius:10px;white-space:pre-wrap}button{background:#0a0a1e;border:1px solid #ffcc44;color:#ffcc44;padding:10px 16px;border-radius:30px;margin:4px}b{font-size:22px}#dec{font-size:14px}</style>
+</head><body>
+<h1>ARKHE VISOR</h1><div>MERKABA ENGINE · SOLO VERIFICA, NUNCA FIRMA</div>
+<div class="box" id="dec">DECISION: <b id="decVal">CALDO 100</b> · <span id="clock">--:--</span><br>EVENTOS <span id="ev">0</span> · VERIFICADOS <span id="ok">0</span> · MALOS <span id="bad" style="color:#ff2244">0</span></div>
+<canvas id="c" width="360" height="360"></canvas>
+<div><button onclick="demo()">▶ DEMO 2 NODOS</button><button onclick="fake()">⚠ FIRMA FALSA</button><button onclick="reset()">↺ RESET</button></div>
+<div><input type="file" id="f" accept=".json"></div>
+<div id="log">Esperando memoria...\nNodos: ecatepec-01 + ecatepec-02\nLlaves PUBLICAS solo. Nunca subas llave.pem</div>
+<script>
+const cv=document.getElementById('c'),ctx=cv.getContext('2d');
+let rot=0,pulse=0,danger=false,dangerUntil=0,ev=0,ok=0,bad=0;
+const ALLOW=['ecatepec-01-1122','ecatepec-02-1122','ecatepec-03-1122','ecatepec-04-1122','ecatepec-05-1122'];
+function log(m){let e=document.getElementById('log');e.textContent=(m+'\n'+e.textContent).slice(0,1200)}
+function upd(){document.getElementById('ev').textContent=ev;document.getElementById('ok').textContent=ok;document.getElementById('bad').textContent=bad;let h=new Date().getHours();document.getElementById('clock').textContent=String(h).padStart(2,'0')+':'+String(new Date().getMinutes()).padStart(2,'0');let d=document.getElementById('decVal');if(h<12){d.textContent='CALDO 100';d.style.color='#ffcc44'}else{d.textContent='MOLE 120';d.style.color='#ff6b00'}}
+setInterval(upd,1000);upd();
+function draw(){
+  ctx.clearRect(0,0,360,360);rot+=0.01+pulse*0.02;pulse*=0.96;
+  let cx=180,cy=180,R=80+pulse*20;
+  let isDanger=danger&&Date.now()<dangerUntil;
+  ctx.save();ctx.translate(cx,cy);ctx.rotate(rot);
+  ctx.strokeStyle=isDanger?'#ff2244':'#ffcc44';ctx.lineWidth=2;
+  for(let k=0;k<2;k++){ctx.beginPath();for(let i=0;i<3;i++){let a=-Math.PI/2+i*2*Math.PI/3+k*Math.PI;let x=Math.cos(a)*R,y=Math.sin(a)*R;if(i==0)ctx.moveTo(x,y);else ctx.lineTo(x,y)}ctx.closePath();ctx.stroke();ctx.rotate(Math.PI)}
+  ctx.fillStyle=isDanger?'rgba(255,34,68,.25)':'rgba(255,204,68,.15)';ctx.beginPath();ctx.arc(0,0,R*0.55,0,7);ctx.fill();ctx.restore();
+  ctx.fillStyle=isDanger?'#ff2244':'#00d0ff';ctx.font='11px monospace';ctx.fillText(isDanger?'⛔ FIRMA INVALIDA':'✓ MALLA OK',110,330);
+  requestAnimationFrame(draw);
+}draw();
+function proc(list,src){
+  for(let e of list){ev++;let node=e.node_id||e.node||'desconocido';
+    if(!ALLOW.includes(node)){bad++;danger=true;dangerUntil=Date.now()+3500;log('⛔ RECHAZADO '+node+' nodo no autorizado')}
+    else{ok++;pulse=1;log('✓ '+node+' · '+(e.payload?.decision||e.decision||'evento'))}
+    upd();
+  }
+  log('--- '+src+' · total '+ev+' ---');
+}
+function demo(){let h=new Date().getHours()<12?'CALDO 100':'MOLE 120';proc([{node_id:'ecatepec-01-1122',payload:{decision:h}},{node_id:'ecatepec-02-1122',payload:{decision:h}},{node_id:'ecatepec-01-1122',payload:{decision:'SYNC OK'}}],'DEMO 2 NODOS')}
+function fake(){proc([{node_id:'ecatepec-99-FAKE',payload:{decision:'MOLE 999'}}],'ATAQUE SIMULADO')}
+function reset(){ev=0;ok=0;bad=0;danger=false;upd();document.getElementById('log').textContent='Reset listo.'}
+document.getElementById('f').addEventListener('change',async e=>{
+  let f=e.target.files[0];if(!f)return;try{let t=await f.text();let d=JSON.parse(t);let arr=Array.isArray(d)?d:(d.events||d.memoria||d.entries||[]);proc(arr,'ARCHIVO')}catch(err){log('Error JSON: '+err.message)}
+});
+</script></body></html>

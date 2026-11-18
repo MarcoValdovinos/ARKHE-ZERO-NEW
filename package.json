@@ -1,0 +1,12 @@
+{
+  "name": "kronos-desk-val",
+  "version": "1.0.1",
+  "type": "module",
+  "bin": {
+    "kronos-desk-val": "./cli.js"
+  },
+  "scripts": {
+    "notarize": "node cli.js notarize"
+  },
+  "dependencies": {}
+}

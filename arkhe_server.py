@@ -61,7 +61,7 @@ def verify_event(ev):
         calc=sha256_hex(msg+(prev_hash or ""))
         ok_hash=(calc==entry_hash)
         if not ok_hash: reasons.append("hash_no_coincide_formato_estandar")
-    valid=(ok_sig is True) and (node in ALLOWLIST)
+    valid=(ok_sig is True) and (node in ALLOWLIST) and (ok_hash is True)
     return {"node_id":node,"decision":payload.get("decision") if isinstance(payload,dict) else None,"payload":payload,"entry_hash":entry_hash,"prev_hash":prev_hash,"ok_signature":ok_sig,"ok_hash_std":ok_hash,"ok_allowlist":node in ALLOWLIST,"valid":valid,"reasons":reasons,"source":ev.get("_source_file")}
 def build_status():
     events=load_events()
@@ -71,7 +71,7 @@ def build_status():
     nodes=sorted(set(v["node_id"] for v in verified))
     from datetime import datetime
     h=datetime.now().hour
-    decision="CALDO 100" if h<12 else "MOLE 120"
+    decision="SIN_EVENTOS" if total==0 else ("VERIFICADO" if invalid_n==0 else "CON_ERRORES")
     return {"service":"ARKHE MESH VERIFIER","version":"1.0.0-prod","decision":decision,"hour":h,"total_events":total,"valid":valid_n,"invalid":invalid_n,"nodes":nodes,"allowlist_nodes":list(ALLOWLIST.keys()),"has_cryptography":HAS_CRYPTO,"files":[Path(f).name for f in find_memoria_files()],"errors":errors,"events":verified[-100:]}
 class H(BaseHTTPRequestHandler):
     def log_message(self,*a): pass

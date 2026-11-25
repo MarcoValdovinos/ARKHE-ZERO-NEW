@@ -39,9 +39,9 @@ const cert = {
   author,
   manifest: 'TOLUCA-GLOBAL-e8d9eac8',
   governance: 'SCDR-002 - 51% Humano / 49% IA',
-  standards: ['NIST FIPS 204 - ML-DSA-65', 'NOM-151-SCFI-2016', 'RFC-3161', 'Dublin Core ISO 15836'],
+  standards: ['Dublin Core ISO 15836'],
   timestamp: now,
-  status: 'NOTARIZADO'
+  status: 'HASH_LOCAL_SIN_FIRMA'
 };
 
 fs.mkdirSync(outDir, { recursive: true });
